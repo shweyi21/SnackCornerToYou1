@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Snack Corner</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#d84315">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Pacifico&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
+body { font-family: 'Poppins', sans-serif; background: #fdfbf7; color: #333; min-height: 100vh; }
+.container { max-width:1200px; margin:auto; padding: 0 1rem 1rem 1rem; }
+#menu, #cart, #admin { display:none; padding-top: 10px;}
+.title { font-family: 'Pacifico', cursive; font-size: 3.5rem; color: #d84315; text-align: center; margin-bottom: 0.5rem; text-shadow: 2px 2px 0px rgba(216, 67, 21, 0.1); }
+.page-header { text-align: center; margin-bottom: 20px; margin-top: 10px; }
+.page-header h2 { font-family: 'Pacifico', cursive; color: #d84315; font-size: 2.5rem; }
+button { cursor:pointer; transition:0.3s; outline: none; }
+button:active { transform:scale(0.95); }
+.btn { padding:.7rem 1.4rem; border:none; border-radius:15px; font-weight:600; font-size: 0.95rem; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+.primary { background: linear-gradient(135deg, #d84315, #ff7043); color:#fff; }
+.primary:hover { box-shadow: 0 6px 15px rgba(216, 67, 21, 0.4); }
+.danger { background: #ff5252; color:#fff; }
+.nav-bar-container { position: sticky; top: 10px; z-index: 100; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-radius: 25px; padding: 10px 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); border: 1px solid rgba(255,255,255,0.8); margin-bottom: 20px; }
+.nav-bar { display: flex; justify-content: space-between; align-items: center; gap: 15px; }
+.nav-left { display: flex; gap: 8px; }
+.icon-btn { width: 42px; height: 42px; border-radius: 50%; background: #fff; color: #d84315; display: flex; justify-content: center; align-items: center; font-size: 1.2rem; text-decoration: none; box-shadow: 0 3px 8px rgba(0,0,0,0.1); border: 1px solid #eee; transition: all 0.2s; cursor: pointer; }
+.icon-btn:hover { background: #d84315; color: white; transform: translateY(-2px); }
+.nav-center { flex: 1; display: flex; justify-content: center; position: relative; }
+.custom-select-wrapper { position: relative; width: 100%; max-width: 200px; }
+.category-select { width: 100%; appearance: none; -webkit-appearance: none; background: #fff; border: 2px solid #d84315; color: #d84315; padding: 8px 15px; border-radius: 25px; font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 1rem; cursor: pointer; text-align: center; text-align-last: center; box-shadow: 0 4px 10px rgba(216, 67, 21, 0.15); transition: 0.3s; }
+.category-select:focus { outline: none; box-shadow: 0 4px 15px rgba(216, 67, 21, 0.3); }
+.nav-right { display: flex; gap: 8px; align-items: center; }
+.cart-wrapper { position: relative; }
+.cart-count { position: absolute; top: -5px; right: -5px; background: #ff3d00; color: #fff; font-size: 10px; font-weight: bold; padding: 2px 6px; border-radius: 10px; border: 2px solid #fff; }
+.food-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
+.food-card { background: #fff; border-radius: 20px; padding: 10px; position: relative; box-shadow: 0 10px 25px rgba(0,0,0,0.03); transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); border: 1px solid #f0f0f0; display: flex; flex-direction: column; }
+.food-card:hover { transform: translateY(-5px); border-color: #ffccbc; }
+.img-container { width: 100%; height: 140px; border-radius: 15px; overflow: hidden; background-color: #e0e0e0; position: relative; margin-bottom: 10px; }
+.food-card img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s; opacity: 0; animation: fadeIn 0.5s forwards; }
+@keyframes fadeIn { to { opacity: 1; } }
+.food-card:hover img { transform: scale(1.1); }
+.food-info { text-align: center; display: flex; flex-direction: column; flex-grow: 1; justify-content: space-between;}
+.food-info h3 { font-size: 0.95rem; color: #333; margin-bottom: 4px; line-height: 1.3; font-weight: 600; }
+.food-info .cat-tag { font-size: 0.7rem; color: #999; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; }
+.price-row { display: flex; justify-content: center; align-items: center; gap: 8px; margin: 5px 0; }
+.current-price { color: #d84315; font-weight: 800; font-size: 1.1rem; }
+.old-price { text-decoration: line-through; color: #bbb; font-size: 0.85rem; }
+.badge-discount { position: absolute; top: 10px; left: 10px; background: #ff3d00; color: white; font-size: 0.65rem; font-weight: bold; padding: 4px 8px; border-radius: 8px; z-index: 2; box-shadow: 0 2px 5px rgba(0,0,0,0.2); animation: pulse 2s infinite; }
+@keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+.stock-status { font-size: 0.8rem; font-weight: 600; margin-bottom: 8px; }
+.in-stock { color: #4caf50; }
+.out-stock { color: #f44336; }
+.add-btn { width: 100%; padding: 8px; border-radius: 12px; border: none; background: #fbe9e7; color: #d84315; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 5px; transition: 0.2s; font-size: 0.9rem; }
+.add-btn:active { background: #d84315; color: white; }
+input, textarea, select.form-control { width: 100%; padding: 12px; margin: 6px 0; border-radius: 12px; border: 1px solid #eee; background: #fff; font-family: 'Poppins', sans-serif; transition: 0.3s; font-size: 0.95rem; }
+input:focus, textarea:focus, select.form-control:focus { border-color: #d84315; outline: none; box-shadow: 0 0 0 3px rgba(216, 67, 21, 0.1); }
+.cart-item { background: #fff; padding: 15px; border-radius: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.03); border: 1px solid #f9f9f9; }
+.flying-item { position: fixed; z-index: 9999; width: 30px; height: 30px; background: #d84315; border-radius: 50%; color: white; display: flex; justify-content: center; align-items: center; pointer-events: none; transition: all 0.8s cubic-bezier(0.2, 1, 0.3, 1); }
+.cart-pop { animation: pop 0.4s ease; }
+@keyframes pop { 50% { transform: scale(1.4); } }
+.running-text-container { background: #fff3e0; color: #d84315; padding: 8px 0; overflow: hidden; white-space: nowrap; border-radius: 10px; margin-bottom: 15px; border: 1px solid #ffe0b2; display: none; }
+.running-text-content { display: inline-block; animation: marquee 15s linear infinite; font-weight: 600; padding-left: 100%; }
+@keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-100%); } }
+#adminContent { background: #fff; padding: 20px; border-radius: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); }
+@media(min-width: 600px) {
+  .food-grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
+  .img-container { height: 180px; }
+  .title { font-size: 4rem; }
+}
+@media(max-width: 350px) {
+  .food-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div id="welcome" style="display:block; text-align:center; padding-top:25vh;">
+    <div class="title">Snack Corner</div>
+    <p style="color:#666; font-size: 1.1rem; margin-bottom: 2rem;">Variety of snacks delivered to you!</p>
+    <button class="btn primary" style="font-size: 1.2rem; padding: 1rem 2.5rem;" onclick="show('menu')">
+      Let's Explore
+    </button>
+  </div>
+
+  <div id="menu">
+    <div class="page-header">
+      <h2>Our Items</h2>
+    </div>
+
+    <div class="nav-bar-container">
+      <div class="nav-bar">
+        <div class="nav-left">
+          <a href="tel:09779525371" class="icon-btn"><i class="fas fa-phone"></i></a>
+          <a href="https://t.me/Yee5SW" target="_blank" class="icon-btn"><i class="fab fa-telegram-plane"></i></a>
+        </div>
+
+        <div class="nav-center">
+          <div class="custom-select-wrapper">
+            <select class="category-select" onchange="filterCategory(this.value)">
+              <option value="All">All</option>
+              <option value="Snack">Snack</option>
+              <option value="Drink">Drink</option>
+              <option value="Noodle">Noodle</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="nav-right">
+          <div class="cart-wrapper" onclick="show('cart')">
+            <div class="icon-btn"><i class="fas fa-shopping-basket"></i></div>
+            <span class="cart-count" id="cartCount">0</span>
+          </div>
+          <div class="icon-btn" onclick="show('admin')"><i class="fas fa-cog"></i></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="runningText" class="running-text-container">
+      <span id="runningTextContent" class="running-text-content"></span>
+    </div>
+
+    <div class="food-grid" id="foodList">
+      <div style="text-align:center; width:100%; grid-column: 1/-1; padding: 20px;">
+        <i class="fas fa-circle-notch fa-spin" style="color:#d84315; font-size: 2rem;"></i>
+      </div>
+    </div>
+  </div>
+
+  <div id="cart">
+    <div class="nav-bar-container">
+      <div class="nav-bar">
+        <div class="nav-left">
+          <div class="icon-btn" onclick="show('menu')"><i class="fas fa-arrow-left"></i></div>
+        </div>
+        <div style="font-weight:bold; font-size:1.2rem; color:#d84315;">Your Cart</div>
+        <div class="nav-right" style="width:42px;"></div> </div>
+    </div>
+
+    <div id="cartItems"></div>
+    
+    <div style="background:#fff; padding:20px; border-radius:20px; margin-top:20px; box-shadow:0 5px 20px rgba(0,0,0,0.05);">
+      <div style="display:flex; justify-content:space-between; font-size:1.2rem; font-weight:bold; margin-bottom:15px; color:#333;">
+        <span>Total</span>
+        <span id="totalPrice" style="color:#d84315;">0 Kyats</span>
+      </div>
+      
+      <input id="name" placeholder="Your Name">
+      <input id="hostel" placeholder="Hostel / Room No.">
+      <input id="phone" placeholder="Phone Number" type="tel">
+      <textarea id="orderMsg" placeholder="Any messages for me" rows="2"></textarea>
+      
+      <button class="btn primary" style="width:100%; margin-top:10px;" onclick="placeOrder()">
+        Confirm Order <i class="fas fa-check-circle"></i>
+      </button>
+      <p style="text-align:center; font-size:0.8rem; color:#888; margin-top:10px;">
+        Orders can be paid with Cash or K-pay (09-779525371)
+      </p>
+    </div>
+  </div>
+
+  <div id="admin">
+    <div class="nav-bar-container">
+      <div class="nav-bar">
+        <div class="nav-left">
+          <div class="icon-btn" onclick="show('menu')"><i class="fas fa-arrow-left"></i></div>
+        </div>
+        <div style="font-weight:bold; font-size:1.2rem; color:#d84315;">Admin</div>
+        <div class="nav-right" style="width:42px;"></div>
+      </div>
+    </div>
+
+    <div id="loginArea" style="text-align:center; padding: 20px;">
+      <i class="fas fa-lock" style="font-size:3rem; color:#d84315; margin-bottom:15px;"></i>
+      <input id="adminPass" type="password" placeholder="Password" style="text-align:center;">
+      <button class="btn primary" style="width:100%; margin-top:10px;" onclick="login()">Access Panel</button>
+    </div>
+
+    <div id="adminContent" style="display:none">
+      <h4 style="margin-bottom:10px; color:#d84315;">Add Product</h4>
+      <input id="newName" placeholder="Item Name">
+      <div style="display:flex; gap:10px;">
+        <input id="newPrice" type="number" placeholder="Price" style="flex:1">
+        <input id="newPriority" type="number" placeholder="Order (1,2..)" style="flex:0.5">
+      </div>
+      <select id="newCategory" class="form-control">
+        <option value="Snack">Snack</option>
+        <option value="Drink">Drink</option>
+        <option value="Noodle">Noodle</option>
+      </select>
+      <input id="newImg" type="file" accept="image/*">
+      <button class="btn primary" style="width:100%; margin-top:10px;" onclick="addFood()" id="addBtn">Upload & Add</button>
+
+      <h4 style="margin: 30px 0 10px 0; color:#d84315; border-top:1px solid #eee; padding-top:20px;">Inventory</h4>
+      <div class="food-grid" id="adminFood"></div>
+
+      <h4 style="margin: 30px 0 10px 0; color:#d84315; border-top:1px solid #eee; padding-top:20px;">Announcements</h4>
+      <input id="newText" placeholder="Running text message...">
+      <button class="btn primary" style="width:100%; margin-top:5px;" onclick="addRunningText()">Post Message</button>
+      <div id="runningTextAdmin" style="margin-top:10px;"></div>
+    </div>
+  </div>
+
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+import { getFirestore, collection, onSnapshot, addDoc, updateDoc, doc, serverTimestamp, deleteDoc, enableIndexedDbPersistence } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAcC--9gqyvSKgNJgXn8PxhUZkNANkgEFY",
+  authDomain: "shwe-yi-win23.firebaseapp.com",
+  projectId: "shwe-yi-win23",
+  storageBucket: "shwe-yi-win23.firebasestorage.app",
+  appId: "1:358130981782:web:6afb45eb96eb41bb7"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+enableIndexedDbPersistence(db).catch((err) => {
+  if (err.code == 'failed-precondition') { console.log('Multiple tabs open'); } 
+  else if (err.code == 'unimplemented') { console.log('Browser not supported'); }
+});
+
+const foodCol = collection(db,'foods');
+const runningTextCol = collection(db,'runningText');
+
+const ADMIN_PASSWORD = "rwwppewys";
+const IMGBB_API_KEY = "7ecf9bb152629974bc5018633b8de663";
+const TELEGRAM_BOT_TOKEN = "8200977847:AAHYUxSQdfk_rcZgLKgJcqtoD6NK6o8T4OM";
+const TELEGRAM_CHAT_ID = "7905877302";
+
+const FALLBACK_IMG = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MDAiIGhlaWdodD0iMzAwIiB2aWV3Qm94PSIwIDAgNDAwIDMwMCI+CiAgPHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSIzMDAiIGZpbGw9IiNlZWUiLz4KICA8dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjI0IiBmaWxsPSIjOTk5IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+U25hY2sgQ29ybmVyPC90ZXh0Pgo8L3N2Zz4=";
+
+let cart = [];
+let currentCategory = 'All';
+
+window.show = (id) => {
+  document.querySelectorAll('#welcome, #menu, #cart, #admin').forEach(el => el.style.display='none');
+  document.getElementById(id).style.display = 'block';
+  window.scrollTo(0,0);
+  if(id === 'menu') renderMenu();
+};
+
+window.filterCategory = (cat) => {
+  currentCategory = cat;
+  renderMenu();
+};
+
+window.renderMenu = () => {
+  const container = document.getElementById('foodList'); 
+  
+  onSnapshot(foodCol, snap => {
+    container.innerHTML = '';
+    let items = [];
+    
+    snap.forEach(d => {
+      const f = d.data(); 
+      f.id = d.id; 
+      items.push(f);
+    });
+
+    if(currentCategory !== 'All') {
+      items = items.filter(i => i.category === currentCategory);
+    }
+
+    items.sort((a, b) => {
+      if (a.inStock !== b.inStock) return b.inStock - a.inStock;
+      const pA = a.priority ? Number(a.priority) : 9999;
+      const pB = b.priority ? Number(b.priority) : 9999;
+      if (pA !== pB) return pA - pB;
+      return (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0);
+    });
+
+    items.forEach(f => {
+      const card = document.createElement('div');
+      card.className = 'food-card';
+      
+      let priceDisplay = '';
+      let discountBadge = '';
+      
+      if(f.originalPrice && f.originalPrice > f.price) {
+        let saved = f.originalPrice - f.price;
+        priceDisplay = `
+          <div class="price-row">
+            <span class="old-price">${f.originalPrice}</span>
+            <span class="current-price">${saved} Ks</span>
+          </div>`;
+        discountBadge = `<div class="badge-discount">SAVE ${f.price} Ks</div>`;
+      } else {
+        priceDisplay = `<div class="price-row"><span class="current-price">${f.price} Ks</span></div>`;
+      }
+
+      const imgUrl = f.img || FALLBACK_IMG;
+
+      card.innerHTML = `
+        ${f.inStock ? discountBadge : ''}
+        <div class="img-container">
+          <img src="${imgUrl}" loading="lazy" onerror="this.onerror=null;this.src='${FALLBACK_IMG}';" alt="${f.name}">
+        </div>
+        <div class="food-info">
+          <div>
+            <h3>${f.name}</h3>
+            <div class="cat-tag">${f.category || 'Snack'}</div>
+          </div>
+          <div>
+            ${priceDisplay}
+            <div class="stock-status ${f.inStock ? 'in-stock' : 'out-stock'}">
+              ${f.inStock ? '<i class="fas fa-check"></i> In Stock' : '<i class="fas fa-times"></i> Sold Out'}
+            </div>
+            ${f.inStock ? 
+              `<button class="add-btn" onclick="addToCart('${f.id}','${f.name}',${f.price}, event)">
+                Add <i class="fas fa-plus"></i>
+              </button>` 
+              : ''}
+          </div>
+        </div>`;
+      container.appendChild(card);
+    });
+  });
+
+  const menuText = document.getElementById('runningTextContent');
+  const runningContainer = document.getElementById('runningText');
+  onSnapshot(runningTextCol, snap => {
+    let txt = ''; 
+    snap.forEach(d => { txt += d.data().text + '   •   '; });
+    menuText.innerHTML = txt; 
+    runningContainer.style.display = txt ? 'block' : 'none';
+  });
+}
+
+window.addToCart = (id, name, price, event) => {
+  cart.push({id, name, price});
+  updateCartUI();
+
+  const flyer = document.createElement('div');
+  flyer.className = 'flying-item';
+  flyer.innerHTML = '<i class="fas fa-plus"></i>';
+  flyer.style.left = event.clientX + 'px';
+  flyer.style.top = event.clientY + 'px';
+  document.body.appendChild(flyer);
+
+  const cartIcon = document.querySelector('.fa-shopping-basket');
+  const target = cartIcon.getBoundingClientRect();
+
+  setTimeout(() => {
+    flyer.style.left = (target.left + 5) + 'px';
+    flyer.style.top = (target.top + 5) + 'px';
+    flyer.style.transform = 'scale(0.1)';
+    flyer.style.opacity = '0';
+  }, 50);
+
+  setTimeout(() => {
+    flyer.remove();
+    const wrapper = document.querySelector('.cart-wrapper');
+    wrapper.classList.add('cart-pop');
+    setTimeout(()=>wrapper.classList.remove('cart-pop'), 400);
+  }, 850);
+};
+
+function updateCartUI() {
+  const list = document.getElementById('cartItems');
+  let total = 0;
+  list.innerHTML = '';
+  
+  const groupedCart = {};
+  cart.forEach((item) => {
+    if (!groupedCart[item.name]) {
+      groupedCart[item.name] = { price: item.price, qty: 0 };
+    }
+    groupedCart[item.name].qty++;
+  });
+
+  Object.entries(groupedCart).forEach(([name, data]) => {
+    const itemTotal = data.qty * data.price;
+    total += itemTotal;
+
+    const itemRow = document.createElement('div');
+    itemRow.className = 'cart-item';
+    itemRow.innerHTML = `
+      <div>
+        <div style="font-weight:600; font-size:1rem;">${name}</div>
+        <div style="font-size:0.85rem; color:#888;">${data.qty} x ${data.price} = ${itemTotal} Ks</div>
+      </div>
+      <div style="display:flex; align-items:center; gap:10px;">
+        <b style="color:#d84315; font-size:1.1rem;">x${data.qty}</b>
+        <button class="btn danger" onclick="removeFromCartByName('${name}')" style="padding:5px 10px;">
+          <i class="fas fa-minus"></i>
+        </button>
+      </div>
+    `;
+    list.appendChild(itemRow);
+  });
+
+  document.getElementById('totalPrice').textContent = total.toLocaleString() + " Kyats";
+  document.getElementById('cartCount').textContent = cart.length;
+}
+
+window.removeFromCartByName = (name) => {
+  const index = cart.findIndex(item => item.name === name);
+  if (index > -1) {
+    cart.splice(index, 1);
+    updateCartUI();
+  }
+};
+
+window.login=()=>{const pass=document.getElementById('adminPass').value; if(pass===ADMIN_PASSWORD){document.getElementById('loginArea').style.display='none'; document.getElementById('adminContent').style.display='block'; renderAdmin(); renderRunningText();} else alert("Incorrect Password");};
+
+async function uploadToImgBB(file){
+  const form=new FormData(); form.append('image',file); 
+  const res=await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`,{method:'POST',body:form}); 
+  const data=await res.json(); 
+  if(data.success) return data.data.url; 
+  throw new Error("Upload failed");
+}
+
+window.addFood=async ()=>{
+  const name=document.getElementById('newName').value;
+  const price=document.getElementById('newPrice').value;
+  const category=document.getElementById('newCategory').value;
+  const priority=document.getElementById('newPriority').value; 
+  const file=document.getElementById('newImg').files[0];
+  const btn = document.getElementById('addBtn');
+  
+  if(!name||!price) return alert("Name and Price required");
+  
+  btn.textContent = "Uploading...";
+  btn.disabled = true;
+
+  try{
+    let imgUrl=''; if(file) imgUrl=await uploadToImgBB(file);
+    
+    await addDoc(foodCol,{
+      name,
+      price:Number(price),
+      category,
+      priority: priority ? Number(priority) : 9999, 
+      img:imgUrl,
+      inStock:true,
+      createdAt:serverTimestamp()
+    });
+    document.getElementById('newName').value=''; document.getElementById('newPrice').value=''; document.getElementById('newImg').value='';
+    alert("Added!");
+  } catch(e){alert("Error adding item")}
+  btn.textContent = "Upload & Add";
+  btn.disabled = false;
+};
+
+function renderAdmin(){
+  const container=document.getElementById('adminFood');
+  onSnapshot(foodCol,snap=>{
+    container.innerHTML=''; 
+    let items=[]; 
+    snap.forEach(d=>{ const f=d.data(); f.id=d.id; items.push(f); }); 
+    items.sort((a,b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+    
+    items.forEach((f)=>{
+      const card=document.createElement('div');
+      card.className='food-card';
+      
+      let isDiscounted = f.originalPrice && f.originalPrice > f.price;
+      let currentDisplay = isDiscounted 
+        ? `<div style="color:red; font-size:11px; margin-bottom:5px;">On Sale (Old: ${f.originalPrice})</div>` 
+        : `<div style="color:green; font-size:11px; margin-bottom:5px;">Standard Price</div>`;
+
+      card.innerHTML=`
+        <div class="img-container" style="height:120px;">
+          <img src="${f.img||FALLBACK_IMG}" loading="lazy">
+        </div>
+        <div style="padding:10px; display:flex; flex-direction:column; gap:5px;">
+          <input id="n-${f.id}" value="${f.name}" style="padding:5px;">
+          <div style="display:flex; gap:5px;">
+            <input id="p-${f.id}" type="number" value="${f.price}" style="padding:5px; flex:1">
+            <input id="pr-${f.id}" type="number" value="${f.priority||''}" placeholder="#" style="padding:5px; width:40px;">
+          </div>
+          <select id="c-${f.id}" class="form-control" style="padding:5px;">
+            <option value="Snack" ${f.category==='Snack'?'selected':''}>Snack</option>
+            <option value="Drink" ${f.category==='Drink'?'selected':''}>Drink</option>
+            <option value="Noodle" ${f.category==='Noodle'?'selected':''}>Noodle</option>
+          </select>
+          ${currentDisplay}
+          <button class="btn" style="background:${f.inStock?'#4caf50':'#f44336'}; color:#fff; padding:5px; font-size:0.8rem;" onclick="toggleStock('${f.id}',${f.inStock})">
+            ${f.inStock?'In Stock':'Out of Stock'}
+          </button>
+          <button class="btn" style="background:#ffb300; color:#fff; padding:5px; font-size:0.8rem;" onclick="setDiscount('${f.id}', ${f.price}, ${f.originalPrice || 'null'})">
+            Set Discount
+          </button>
+          <div style="display:flex; gap:5px; margin-top:5px;">
+            <button class="btn primary" style="flex:1; padding:5px;" onclick="saveItem('${f.id}')">Save</button>
+            <button class="btn danger" style="flex:1; padding:5px;" onclick="deleteFoodItem('${f.id}')">Del</button>
+          </div>
+        </div>`;
+      container.appendChild(card);
+    });
+  });
+}
+
+window.setDiscount = async (id, currentPrice, oldOriginal) => {
+  let basePrice = oldOriginal ? oldOriginal : currentPrice;
+  let salePrice = prompt(`Enter NEW PRICE.\n(Regular Price: ${basePrice})\nTo remove discount, enter ${basePrice}.`);
+  if (salePrice === null) return; 
+  salePrice = Number(salePrice);
+  if(isNaN(salePrice)) return alert("Invalid number");
+
+  if (salePrice < basePrice && salePrice > 0) {
+    await updateDoc(doc(db,'foods',id), { price: salePrice, originalPrice: basePrice });
+  } else {
+    await updateDoc(doc(db,'foods',id), { price: basePrice, originalPrice: null });
+  }
+};
+
+window.deleteFoodItem=async (id)=>{if(confirm("Delete item?")) await deleteDoc(doc(db,'foods',id));}
+
+window.saveItem=async (id)=>{
+  const name=document.getElementById(`n-${id}`).value; 
+  const price=document.getElementById(`p-${id}`).value; 
+  const category=document.getElementById(`c-${id}`).value;
+  const priority=document.getElementById(`pr-${id}`).value;
+  try{
+    await updateDoc(doc(db,'foods',id),{
+      name, price:Number(price), category,
+      priority: priority ? Number(priority) : 9999
+    }); 
+    alert("Saved");
+  } catch(e){alert("Failed")}
+};
+window.toggleStock=async (id,currentStatus)=>{await updateDoc(doc(db,'foods',id),{inStock:!currentStatus});}
+
+window.addRunningText=async ()=>{
+  const txt=document.getElementById('newText').value.trim(); 
+  if(!txt) return; 
+  await addDoc(runningTextCol,{text:txt,createdAt:serverTimestamp()}); 
+  document.getElementById('newText').value=''; 
+  renderRunningText();
+}
+function renderRunningText(){
+  const container=document.getElementById('runningTextAdmin'); 
+  onSnapshot(runningTextCol,snap=>{
+    container.innerHTML=''; 
+    snap.forEach(d=>{
+      const div=document.createElement('div'); 
+      div.style.display='flex'; div.style.justifyContent='space-between'; div.style.padding='5px'; div.style.background='#eee'; div.style.marginBottom='5px';
+      div.innerHTML=`<span>${d.data().text}</span> <span style="color:red; cursor:pointer;" onclick="deleteRunningText('${d.id}')">X</span>`; 
+      container.appendChild(div);
+    });
+  });
+}
+window.deleteRunningText=async (id)=>{await deleteDoc(doc(db,'runningText',id)); renderRunningText();}
+
+window.placeOrder = async () => {
+  const name = document.getElementById('name').value; 
+  const hostel = document.getElementById('hostel').value; 
+  const phone = document.getElementById('phone').value;
+  const msg = document.getElementById('orderMsg').value;
+
+  if(cart.length === 0 || !name || !phone) return alert("Please fill all details and add items.");
+  
+  let itemsText = cart.map(i => `• ${i.name} (${i.price} Ks)`).join('\n');
+  let total = cart.reduce((a, b) => a + b.price, 0);
+
+  let text = `📦 *NEW ORDER*\n\n👤 ${name}\n🏠 ${hostel}\n📞 ${phone}\n💬 ${msg}\n\n🛒 *Items:*\n${itemsText}\n\n💰 *Total: ${total} Ks*`;
+
+  try { 
+    await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: text, parse_mode: 'Markdown' })
+    }); 
+    alert("Order Successfully Sent!"); 
+    cart = []; updateCartUI(); show('menu');
+  } catch(e) { alert("Check internet connection."); }
+};
+</script>
+</body>
+</html>
